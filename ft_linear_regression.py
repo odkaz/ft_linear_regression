@@ -50,9 +50,3 @@ def linear_regression():
     plt.scatter(x_train, y_train, marker='x', c='r', label='Actual Values')
     plt.show()
     return theta0, theta1
-
-def main():
-    t0, t1 = linear_regression()
-
-if __name__ == '__main__':
-    main()
