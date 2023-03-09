@@ -29,12 +29,17 @@ def data_normalisation(data):
         res.append(norm)
     return res, low
 
-def linear_regression():
-    df = pd.read_csv('./data.csv')
+def get_train_data():
+    url = './data.csv'
+    df = pd.read_csv(url)
     km = df["km"].to_list()
     price = df["price"].to_list()
     x_train = np.array(km)
     y_train = np.array(price)
+    return x_train, y_train
+
+def linear_regression():
+    x_train, y_train = get_train_data()
     learning_rate = 0.001
     iterate = 100000
     theta0, theta1 = 0,0
