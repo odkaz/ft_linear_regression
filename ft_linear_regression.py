@@ -51,7 +51,7 @@ def linear_regression():
         theta1 -= learning_rate * get_weight(tmp0, tmp1, x_norm, y_train)
 
     res_y = [estimate_price(theta0, theta1, x) for x in x_norm]
-    plt.plot(x_train, res_y, c='b', label='Our Prediction')
-    plt.scatter(x_train, y_train, marker='x', c='r', label='Actual Values')
-    plt.show()
+    # plt.plot(x_train, res_y, c='b', label='Our Prediction')
+    # plt.scatter(x_train, y_train, marker='x', c='r', label='Actual Values')
+    # plt.show()
     return theta0, theta1
