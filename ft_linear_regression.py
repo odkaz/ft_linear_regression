@@ -21,15 +21,6 @@ def get_weight(bias, weight, milage, price):
         sum += (estimate_price(bias, weight, milage[i]) - price[i]) * milage[i]
     return sum / m
 
-# def data_normalisation(data):
-#     low = min(data)
-#     high = max(data)
-#     res = []
-#     for x in data:
-#         norm = (x - low) / (high - low)
-#         res.append(norm)
-#     return res, low, high
-
 def mean_(y):
     m = len(y)
     sum = 0
@@ -49,17 +40,6 @@ def data_standardization(data):
     standard = get_stddev(data)
     res = (data - mean) / standard
     return res
-
-# def denormalize(data, low, high):
-#     ratio = data / (high - low) / low
-#     return ratio
-
-# def destandardize(x, data):
-#     mean = mean_(data)
-#     standard = get_stddev(data)
-
-#     origin = x * standard + mean
-#     return origin
 
 def unnormalize_weight(weight, data):
     standard = get_stddev(data)
@@ -84,7 +64,6 @@ def linear_regression():
     learning_rate = 0.001
     iterate = 100000
     theta0, theta1 = 0,0
-    # x_norm, low, high = data_normalisation(x_train)
     x_norm = data_standardization(x_train)
 
     for _ in range(0, iterate):
@@ -92,16 +71,7 @@ def linear_regression():
         theta0 -= learning_rate * get_bias(tmp0, tmp1, x_norm, y_train)
         theta1 -= learning_rate * get_weight(tmp0, tmp1, x_norm, y_train)
 
-    # res_y = [estimate_price(theta0, theta1, x) for x in x_norm]
-    # plt.plot(x_train, res_y, c='b', label='Our Prediction')
-    # plt.scatter(x_train, y_train, marker='x', c='r', label='Actual Values')
-    # plt.show()
-
     theta0 = unnormalize_bias(theta0, theta1, x_train)
     theta1 = unnormalize_weight(theta1, x_train)
 
-    res_y = [estimate_price(theta0, theta1, x) for x in x_train]
-    plt.plot(x_train, res_y, c='b', label='Our Prediction')
-    plt.scatter(x_train, y_train, marker='x', c='r', label='Actual Values')
-    plt.show()
     return theta0, theta1
