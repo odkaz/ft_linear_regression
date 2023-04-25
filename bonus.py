@@ -80,10 +80,10 @@ def unnormalize_weight(weight, data):
     standard = get_stddev(data)
     return weight / standard
 
-def unnormalize_bias(theta0, theta1, data):
+def unnormalize_bias(b, w, data):
     mean = mean_(data)
     standard = get_stddev(data)
-    return theta0 - ((theta1 * mean) / standard)
+    return b - ((w * mean) / standard)
 
 def get_train_data():
     url = './data.csv'
@@ -94,27 +94,89 @@ def get_train_data():
     y_train = np.array(price)
     return x_train, y_train
 
+def compute_cost(x, y, w, b):
+   
+    m = x.shape[0] 
+    cost = 0
+    
+    for i in range(m):
+        f_wb = w * x[i] + b
+        cost = cost + (f_wb - y[i])**2
+    total_cost = 1 / (2 * m) * cost
+
+    return total_cost
+
+from celluloid import Camera
+
 def linear_regression():
     x_train, y_train = get_train_data()
-    learning_rate = 0.001
-    iterate = 100000
-    theta0, theta1 = 0,0
+    learning_rate = 0.01
+    iterate = 10000
+    b, w = 0,0
     x_norm = data_standardization(x_train)
+    J_history = []
+    p_history = []
 
     for _ in range(0, iterate):
-        tmp0, tmp1 = theta0, theta1
-        theta0 -= learning_rate * get_bias(tmp0, tmp1, x_norm, y_train)
-        theta1 -= learning_rate * get_weight(tmp0, tmp1, x_norm, y_train)
+        tmp0, tmp1 = b, w
+        b -= learning_rate * get_bias(tmp0, tmp1, x_norm, y_train)
+        w -= learning_rate * get_weight(tmp0, tmp1, x_norm, y_train)
 
-    theta0 = unnormalize_bias(theta0, theta1, x_train)
-    theta1 = unnormalize_weight(theta1, x_train)
+        if _< iterate:      # prevent resource exhaustion 
+            J_history.append( compute_cost(x_norm, y_train, w , b))
+            p_history.append([w, b])
 
-    res_y = [estimate_price(theta0, theta1, x) for x in x_train]
-    plt.plot(x_train, res_y, c='b', label='Our Prediction')
-    plt.scatter(x_train, y_train, marker='x', c='r', label='Actual Values')
+    b = unnormalize_bias(b, w, x_train)
+    w = unnormalize_weight(w, x_train)
+
+    res_y = [estimate_price(b, w, x) for x in x_train]
+    # plt.plot(x_train, res_y, c='b', label='Our Prediction')
+    # plt.scatter(x_train, y_train, marker='x', c='r', label='Actual Values')
+    # plt.show()
+
+
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, constrained_layout=True, figsize=(12,4))
+    camera = Camera(fig)
+
+    # ax1.plot(x_train, res_y, c='b', label='Our Prediction')
+    # ax1.scatter(x_train, y_train, marker='x', c='r', label='Actual Values')
+    show = 1
+    buf = 10000
+
+
+    for i in range(0, iterate):
+        if (i == show):
+            animate_y = [estimate_price(p_history[i][1], p_history[i][0], x) for x in x_norm]
+
+
+            ax1.plot(x_train, animate_y, c='r', label='Our Prediction')
+
+            if (i < buf):
+                ax2.scatter(i, J_history[i], marker='o', c='r', label='cost')
+            # ax2.scatter(i, J_history[i], marker='o', c='r', label='cost')
+
+            show*= 2
+            camera.snap()
+
+
+
+    ax1.plot(x_train, res_y, c='b', label='Our Prediction')
+    ax1.scatter(x_train, y_train, marker='x', c='g', label='Actual Values')
+    ax2.plot(J_history[:buf])
+
+    # ax2.plot(buf + np.arange(len(J_history[buf:])), J_history[buf:])
+    ax1.set_title("Price vs. Milage");  ax2.set_title("Cost vs. Iteration")
+    ax1.set_ylabel('Price')            ;  ax2.set_ylabel('Cost') 
+    ax1.set_xlabel('Milage')  ;  ax2.set_xlabel('iteration step')
+
+
+
+    animation = camera.animate()
+    animation.save('celluloid_legends.gif', writer = 'imagemagick')
     plt.show()
 
-    return theta0, theta1
+    return b, w
 
 
 def main():
