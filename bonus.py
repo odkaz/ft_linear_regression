@@ -1,19 +1,20 @@
-# from math import sqrt
+from math import sqrt
 import math
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from celluloid import Camera
 
-# def mse_(y, y_hat):
-#     m = len(y)
-#     sum = 0
-#     for i in range(m):
-#         sum += (y_hat[i] - y[i]) ** 2
-#     return sum / m
+def mse_(y, y_hat):
+    m = len(y)
+    sum = 0
+    for i in range(m):
+        sum += (y_hat[i] - y[i]) ** 2
+    return sum / m
 
-# def rmse_(y, y_hat):
-#     mse = mse_(y, y_hat)
-#     return sqrt(mse)
+def rmse_(y, y_hat):
+    mse = mse_(y, y_hat)
+    return sqrt(mse)
 
 # def mae_(y, y_hat):
 #     m = len(y)
@@ -106,8 +107,6 @@ def compute_cost(x, y, w, b):
 
     return total_cost
 
-from celluloid import Camera
-
 def linear_regression():
     x_train, y_train = get_train_data()
     learning_rate = 0.01
@@ -129,61 +128,46 @@ def linear_regression():
     b = unnormalize_bias(b, w, x_train)
     w = unnormalize_weight(w, x_train)
 
+    # show animation
     res_y = [estimate_price(b, w, x) for x in x_train]
-    # plt.plot(x_train, res_y, c='b', label='Our Prediction')
-    # plt.scatter(x_train, y_train, marker='x', c='r', label='Actual Values')
-    # plt.show()
-
-
-
     fig, (ax1, ax2) = plt.subplots(1, 2, constrained_layout=True, figsize=(12,4))
     camera = Camera(fig)
-
-    # ax1.plot(x_train, res_y, c='b', label='Our Prediction')
-    # ax1.scatter(x_train, y_train, marker='x', c='r', label='Actual Values')
     show = 1
     buf = 10000
-
-
-    for i in range(0, iterate):
-        if (i == show):
-            animate_y = [estimate_price(p_history[i][1], p_history[i][0], x) for x in x_norm]
-
-
-            ax1.plot(x_train, animate_y, c='r', label='Our Prediction')
-
-            if (i < buf):
-                ax2.scatter(i, J_history[i], marker='o', c='r', label='cost')
-            # ax2.scatter(i, J_history[i], marker='o', c='r', label='cost')
-
-            show*= 2
-            camera.snap()
-
-
-
+    animation_on = True
+    if (animation_on):
+        for i in range(0, iterate):
+            if (i == 0 or i == show or i == iterate - 1):
+                # show precision
+                tmp_b = p_history[i][1]
+                tmp_w = p_history[i][0]
+                tmp_y = [estimate_price(tmp_b, tmp_w, x) for x in x_norm]
+                tmp_cost = J_history[i]
+                print(
+                    'i:', '{:>4}'.format(i),
+                    'mse:', '{:>18f}'.format(mse_(y_train, tmp_y)),
+                    'rmse:', '{:>18f}'.format(rmse_(y_train, tmp_y)),
+                    'cost:', '{:>18f}'.format(tmp_cost),)
+                animate_y = [estimate_price(tmp_b, tmp_w, x) for x in x_norm]
+                ax1.plot(x_train, animate_y, c='r', label='Our Prediction')
+                if (i < buf):
+                    ax2.scatter(i, tmp_cost, marker='o', c='r', label='cost')
+                show*= 2
+                camera.snap()
     ax1.plot(x_train, res_y, c='b', label='Our Prediction')
     ax1.scatter(x_train, y_train, marker='x', c='g', label='Actual Values')
     ax2.plot(J_history[:buf])
-
-    # ax2.plot(buf + np.arange(len(J_history[buf:])), J_history[buf:])
     ax1.set_title("Price vs. Milage");  ax2.set_title("Cost vs. Iteration")
-    ax1.set_ylabel('Price')            ;  ax2.set_ylabel('Cost') 
-    ax1.set_xlabel('Milage')  ;  ax2.set_xlabel('iteration step')
-
-
-
-    animation = camera.animate()
-    animation.save('celluloid_legends.gif', writer = 'imagemagick')
+    ax1.set_ylabel('Price');  ax2.set_ylabel('Cost') 
+    ax1.set_xlabel('Milage');  ax2.set_xlabel('iteration step')
+    if (animation_on):
+        animation = camera.animate()
+        animation.save('celluloid_legends.gif', writer = 'imagemagick')
     plt.show()
-
     return b, w
-
 
 def main():
     t0, t1 = linear_regression()
-
-
-
 
     res = {'t0': t0, 't1': t1}
 
